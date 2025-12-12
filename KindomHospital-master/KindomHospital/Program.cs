@@ -56,9 +56,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 
-    // Scalar UI - interface moderne pour tester l'API
+    // TODO: Scalar UI - décommenter après avoir installé le package Scalar.AspNetCore
+    // app.MapScalarApiReference();
     // Accessible à: https://localhost:7006/scalar/v1
-    app.MapScalarApiReference();
 }
 
 // 4. Redirection HTTPS
