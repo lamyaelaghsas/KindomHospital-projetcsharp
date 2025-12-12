@@ -32,9 +32,10 @@ public static class SeedData
     /// </summary>
     private static void SeedSpecialties(KingdomHospitalContext context)
     {
-        if (context.Specialties.Any())
-            return; // Déjà initialisé
+        if (context.Specialties.Any()) // verifie si des spécialités existent déjà
+            return;
 
+        // construit le chemin vers le fichier CSV
         var csvPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Infrastructure", "Data", "specialties.csv");
 
         if (!File.Exists(csvPath))
@@ -43,13 +44,13 @@ public static class SeedData
             return;
         }
 
-        var lines = File.ReadAllLines(csvPath).Skip(1); // Skip header
+        var lines = File.ReadAllLines(csvPath).Skip(1); //Lit toutes les lignes du CSV et saute la première ligne (en-tête)
         var specialties = new List<Specialty>();
 
         foreach (var line in lines)
         {
             var parts = line.Split(',');
-            if (parts.Length >= 2)
+            if (parts.Length >= 2) 
             {
                 specialties.Add(new Specialty
                 {
@@ -59,9 +60,9 @@ public static class SeedData
             }
         }
 
-        context.Specialties.AddRange(specialties);
+        context.Specialties.AddRange(specialties); // Ajoute les spécialités à la base de données
         context.SaveChanges();
-        Console.WriteLine($"✓ {specialties.Count} spécialités chargées");
+        Console.WriteLine($"{specialties.Count} spécialités chargées");
     }
 
     /// <summary>
@@ -101,7 +102,7 @@ public static class SeedData
 
         context.Medicaments.AddRange(medicaments);
         context.SaveChanges();
-        Console.WriteLine($"✓ {medicaments.Count} médicaments chargés");
+        Console.WriteLine($"{medicaments.Count} médicaments chargés");
     }
 
     /// <summary>
@@ -113,18 +114,18 @@ public static class SeedData
             return; // Déjà initialisé
 
         var doctors = new List<Doctor>
-        {
-            new() { FirstName = "Jean", LastName = "Dupont", SpecialtyId = 10 }, // Cardiologie
-            new() { FirstName = "Marie", LastName = "Martin", SpecialtyId = 21 }, // Pédiatrie
-            new() { FirstName = "Pierre", LastName = "Bernard", SpecialtyId = 16 }, // Neurologie
-            new() { FirstName = "Sophie", LastName = "Dubois", SpecialtyId = 25 }, // Dermatologie
-            new() { FirstName = "Luc", LastName = "Thomas", SpecialtyId = 12 }, // Gastro-entérologie
-            new() { FirstName = "Emma", LastName = "Robert", SpecialtyId = 23 }, // Ophtalmologie
-        };
+    {
+        new() { FirstName = "Jean", LastName = "Dupont", SpecialtyID = 10 }, // Cardiologie
+        new() { FirstName = "Marie", LastName = "Martin", SpecialtyID = 21 }, // Pédiatrie
+        new() { FirstName = "Pierre", LastName = "Bernard", SpecialtyID = 16 }, // Neurologie
+        new() { FirstName = "Sophie", LastName = "Dubois", SpecialtyID = 25 }, // Dermatologie
+        new() { FirstName = "Luc", LastName = "Thomas", SpecialtyID = 12 }, // Gastro-entérologie
+        new() { FirstName = "Emma", LastName = "Robert", SpecialtyID = 23 }, // Ophtalmologie
+    };
 
         context.Doctors.AddRange(doctors);
         context.SaveChanges();
-        Console.WriteLine($"✓ {doctors.Count} médecins créés");
+        Console.WriteLine($"{doctors.Count} médecins créés");
     }
 
     /// <summary>
@@ -146,7 +147,7 @@ public static class SeedData
 
         context.Patients.AddRange(patients);
         context.SaveChanges();
-        Console.WriteLine($"✓ {patients.Count} patients créés");
+        Console.WriteLine($"{patients.Count} patients créés");
     }
 
     /// <summary>
@@ -188,7 +189,7 @@ public static class SeedData
 
         context.Consultations.AddRange(consultations);
         context.SaveChanges();
-        Console.WriteLine($"✓ {consultations.Count} consultations créées");
+        Console.WriteLine($"{consultations.Count} consultations créées");
     }
 
     /// <summary>
@@ -333,6 +334,6 @@ public static class SeedData
 
         context.Ordonnances.AddRange(new[] { ord1, ord2, ord3, ord4, ord5 });
         context.SaveChanges();
-        Console.WriteLine($"✓ 5 ordonnances créées avec lignes");
+        Console.WriteLine($" 5 ordonnances créées avec lignes");
     }
 }

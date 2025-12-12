@@ -32,11 +32,11 @@ public class SpecialtyConfiguration : IEntityTypeConfiguration<Specialty>
         builder.HasIndex(s => s.Name)
             .IsUnique()
             .HasDatabaseName("IX_Specialty_Name");
-        
-        // Relation One-to-Many: Une spécialité -> Plusieurs médecins
+
+        // Relation One-to-Many: Une spécialité -> Plusieurs médecins = Une Specialty a plusieurs (HasMany) Doctors
         builder.HasMany(s => s.Doctors)
             .WithOne(d => d.Specialty)
-            .HasForeignKey(d => d.SpecialtyId)
+            .HasForeignKey(d => d.SpecialtyID)
             .OnDelete(DeleteBehavior.Restrict);  // Empêche la suppression si des médecins sont liés
     }
 }
