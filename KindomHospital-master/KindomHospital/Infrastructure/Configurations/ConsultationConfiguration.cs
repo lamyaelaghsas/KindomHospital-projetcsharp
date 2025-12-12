@@ -1,6 +1,6 @@
 ﻿namespace KingdomHospital.Infrastructure.Configurations
 {
-    public class RegionConfiguration
+    public class ConsultationConfiguration
     {
     }
 }

@@ -13,5 +13,5 @@ public class Ordonnance
     public Doctor Doctor { get; set; } = null!;
     public Patient Patient { get; set; } = null!;
     public Consultation? Consultation { get; set; }
-    public ICollection<Ordonnance_Ligne> OrdonnanceLignes { get; set; } = new List<Ordonnance_Ligne>();
+    public ICollection<OrdonnanceLigne> OrdonnanceLignes { get; set; } = new List<OrdonnanceLigne>();
 }

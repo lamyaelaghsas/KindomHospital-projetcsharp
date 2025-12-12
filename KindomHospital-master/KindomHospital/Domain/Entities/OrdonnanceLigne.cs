@@ -1,6 +1,6 @@
 ﻿namespace KingdomHospital.Domain.Entities
 {
-    public class Ordonnance_Ligne
+    public class OrdonnanceLigne
     {
         public int Id { get; set; }
         public int OrdonnanceId { get; set; }
