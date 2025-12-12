@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <Folder Include="Infrastructure\Migrations\" />
-    <Folder Include="Infrastructure\Configurations\" />
   </ItemGroup>
 
 </Project>

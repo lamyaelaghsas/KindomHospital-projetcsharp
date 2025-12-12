@@ -1,3 +1,4 @@
+using Microsoft.OpenApi.Validations;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,10 +12,23 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 //Ajouter les Mappers au DI
+builder.Services.AddSingleton<KindomHospital.Application.Mappers.WeatherMapper>();
 //Ajouter les service au DI
+builder.Services.AddScoped<KindomHospital.Application.Services.WeatherService>();
 //Ajouter les repositories au DI
+var connectionString = builder.Configuration.GetConnectionString("HospitalConnection");
+builder.Services.AddDbContext<KindomHospitalContext>(options =>
+    options.UseSqlServer(connectionString));
+builder.Services.AddScoped<IWeatherForecastRepository, WeatherForecastRepository>();
 
 var app = builder.Build();
+
+//Seed data
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<KindomHospitalContext>();
+    SeedData.Initialize(db);
+}
 
 app.UseSerilogRequestLogging();
 
