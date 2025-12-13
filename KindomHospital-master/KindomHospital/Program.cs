@@ -1,40 +1,82 @@
+using KingdomHospital.Application.Mappers;
+using KingdomHospital.Application.Services;
 using KingdomHospital.Infrastructure;
+using KingdomHospital.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ========== CONFIGURATION DES SERVICES (Builder Phase) ==========
-
-// 1. Configuration Serilog pour le logging
-// Selon le cours: Serilog offre un logging structuré avancé
+// ===== CONFIGURATION SERILOG =====
+// Selon le cours: Serilog pour le logging avancé
 builder.Services.AddSerilog((services, lc) =>
     lc.ReadFrom.Configuration(builder.Configuration));
 
-// 2. Ajout des contrôleurs
-// Selon le cours: AddControllers enregistre les services pour les contrôleurs API
+// ===== CONFIGURATION CONTROLLERS =====
+// Selon le cours: AddControllers pour enregistrer les contrôleurs
 builder.Services.AddControllers();
 
-// 3. Configuration OpenAPI/Swagger
-// Selon le cours: OpenAPI génère la documentation automatique de l'API
+// ===== CONFIGURATION OPENAPI & SWAGGER =====
+// Selon le cours: OpenAPI pour la documentation de l'API
 builder.Services.AddOpenApi();
 
-// 4. Configuration du DbContext avec SQL Server
-// Selon le cours: AddDbContext enregistre le contexte EF Core avec injection de dépendances
-var connectionString = builder.Configuration.GetConnectionString("HospitalConnection");
+// ===== CONFIGURATION ENTITY FRAMEWORK =====
+// Selon le cours: AddDbContext pour configurer EF Core avec SQL Server
 builder.Services.AddDbContext<KingdomHospitalContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// TODO: Ajouter les Repositories (Scoped)
-// TODO: Ajouter les Mappers (Transient)
-// TODO: Ajouter les Services (Scoped)
+// ===== INJECTION DE DÉPENDANCES - MAPPERS =====
+// Selon le cours: Mappers en Transient (stateless)
+builder.Services.AddTransient<SpecialtyMapper>();
+builder.Services.AddTransient<DoctorMapper>();
+builder.Services.AddTransient<PatientMapper>();
+builder.Services.AddTransient<ConsultationMapper>();
+builder.Services.AddTransient<MedicamentMapper>();
+builder.Services.AddTransient<OrdonnanceMapper>();
+builder.Services.AddTransient<OrdonnanceLigneMapper>();
+
+// ===== INJECTION DE DÉPENDANCES - REPOSITORIES =====
+// Selon le cours: Repositories en Scoped (durée de vie de la requête)
+builder.Services.AddScoped<SpecialtyRepository>();
+builder.Services.AddScoped<DoctorRepository>();
+builder.Services.AddScoped<PatientRepository>();
+builder.Services.AddScoped<ConsultationRepository>();
+builder.Services.AddScoped<MedicamentRepository>();
+builder.Services.AddScoped<OrdonnanceRepository>();
+builder.Services.AddScoped<OrdonnanceLigneRepository>();
+
+// ===== INJECTION DE DÉPENDANCES - SERVICES =====
+// Selon le cours: Services en Scoped
+builder.Services.AddScoped<SpecialtyService>();
+builder.Services.AddScoped<DoctorService>();
+builder.Services.AddScoped<PatientService>();
+builder.Services.AddScoped<ConsultationService>();
+builder.Services.AddScoped<MedicamentService>();
+builder.Services.AddScoped<OrdonnanceService>();
+builder.Services.AddScoped<OrdonnanceLigneService>();
 
 var app = builder.Build();
 
-// ========== CONFIGURATION DU PIPELINE HTTP (Application Phase) ==========
+// ===== CONFIGURATION DU PIPELINE HTTP =====
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+    app.MapOpenApi();
+    app.MapScalarApiReference(); // UI moderne pour tester l'API
+}
 
-// 1. Initialisation des données (Seed)
-// Selon le cours: Seed Data permet d'avoir des données de démonstration
+// Selon le cours: UseSerilogRequestLogging pour logger les requêtes HTTP
+app.UseSerilogRequestLogging();
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
+
+// Selon le cours: MapControllers pour mapper les routes des contrôleurs
+app.MapControllers();
+
+// ===== INITIALISATION DES DONNÉES =====
+// Selon le cours: Seed Data pour avoir des données par défaut
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<KingdomHospitalContext>();
@@ -45,31 +87,8 @@ using (var scope = app.Services.CreateScope())
         context.Database.Migrate();
     }
 
+    // Initialiser les données de démonstration
     SeedData.Initialize(context);
 }
 
-// 2. Logging des requêtes HTTP avec Serilog
-app.UseSerilogRequestLogging();
-
-// 3. Configuration OpenAPI en développement
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-
-    // TODO: Scalar UI - décommenter après avoir installé le package Scalar.AspNetCore
-    // app.MapScalarApiReference();
-    // Accessible à: https://localhost:7006/scalar/v1
-}
-
-// 4. Redirection HTTPS
-app.UseHttpsRedirection();
-
-// 5. Autorisation
-app.UseAuthorization();
-
-// 6. Mapping des contrôleurs
-// Selon le cours: MapControllers établit les routes vers les contrôleurs
-app.MapControllers();
-
-// Démarrage de l'application
 app.Run();
