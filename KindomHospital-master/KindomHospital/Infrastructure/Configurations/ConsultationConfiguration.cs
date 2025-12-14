@@ -1,4 +1,4 @@
-﻿using KingdomHospital.Domain.Entities;
+using KingdomHospital.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -42,7 +42,7 @@ public class ConsultationConfiguration : IEntityTypeConfiguration<Consultation>
             .IsUnique()
             .HasDatabaseName("IX_Consultation_Doctor_Date_Hour");
 
-        // Relation Many-to-One: Plusieurs consultations -> Un médecin = chaque docteur peut avoir plusieurs consultations
+        // Relation Many-to-One: Plusieurs consultations -> Un médecin
         builder.HasOne(c => c.Doctor)
             .WithMany(d => d.Consultations)
             .HasForeignKey(c => c.DoctorId)
@@ -54,7 +54,7 @@ public class ConsultationConfiguration : IEntityTypeConfiguration<Consultation>
             .HasForeignKey(c => c.PatientId)
             .OnDelete(DeleteBehavior.Restrict);  // Empêche la suppression du patient
 
-        // Relation One-to-Many: Une consultation -> Plusieurs ordonnances = une consultation peut avoir plusieurs ordonnances
+        // Relation One-to-Many: Une consultation -> Plusieurs ordonnances
         builder.HasMany(c => c.Ordonnances)
             .WithOne(o => o.Consultation)
             .HasForeignKey(o => o.ConsultationId)

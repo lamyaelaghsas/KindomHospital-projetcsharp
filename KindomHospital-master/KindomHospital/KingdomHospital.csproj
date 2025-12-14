@@ -33,8 +33,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Application\Repositories\" />
-		<Folder Include="Controllers\" />
 		<Folder Include="Infrastructure\Migrations\" />
 	</ItemGroup>
 </Project>

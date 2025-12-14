@@ -32,7 +32,7 @@ public class KingdomHospitalContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Application de toutes les configurations : donc jindique a EF cmt configurer les tables
+        // Application de toutes les configurations
         // Selon le cours: ApplyConfiguration applique les configurations IEntityTypeConfiguration
         modelBuilder.ApplyConfiguration(new SpecialtyConfiguration());
         modelBuilder.ApplyConfiguration(new DoctorConfiguration());

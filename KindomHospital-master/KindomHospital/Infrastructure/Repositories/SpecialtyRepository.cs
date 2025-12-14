@@ -3,10 +3,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KingdomHospital.Infrastructure.Repositories;
 
-
+/// <summary>
+/// Repository pour gérer l'accès aux données des spécialités
+/// Selon le cours: Le Repository encapsule la logique d'accès aux données (slide 228)
+/// </summary>
 public class SpecialtyRepository(KingdomHospitalContext context)
 {
-
+    /// <summary>
+    /// Récupère toutes les spécialités
+    /// Selon le cours: ToListAsync() pour les opérations asynchrones (slide 31)
+    /// </summary>
     public async Task<List<Specialty>> GetAllAsync()
     {
         return await context.Specialties

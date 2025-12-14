@@ -7,7 +7,7 @@ public class Patient
     public string FirstName { get; set; } = string.Empty;
     public DateOnly BirthDate { get; set; }
 
-
+    // Navigation properties
     public ICollection<Consultation> Consultations { get; set; } = new List<Consultation>();
     public ICollection<Ordonnance> Ordonnances { get; set; } = new List<Ordonnance>();
 }

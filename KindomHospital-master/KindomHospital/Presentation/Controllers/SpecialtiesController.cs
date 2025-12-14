@@ -1,20 +1,20 @@
-using KingdomHospital.Application.DTOs;
+ï»¿using KingdomHospital.Application.DTOs;
 using KingdomHospital.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KingdomHospital.Presentation.Controllers;
 
 /// <summary>
-/// Contrôleur pour gérer les spécialités médicales
-/// Selon le cours: Les contrôleurs reçoivent les requêtes HTTP (slide 166-168)
+/// ContrÃ´leur pour gÃ©rer les spÃ©cialitÃ©s mÃ©dicales
+/// Selon le cours: Les contrÃ´leurs reÃ§oivent les requÃªtes HTTP (slide 166-168)
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
 public class SpecialtiesController(SpecialtyService service) : ControllerBase
 {
     /// <summary>
-    /// GET /api/specialties - Liste toutes les spécialités
-    /// Selon le cours: ActionResult<T> combine typage fort et flexibilité (slide 179-180)
+    /// GET /api/specialties - Liste toutes les spÃ©cialitÃ©s
+    /// Selon le cours: ActionResult<T> combine typage fort et flexibilitÃ© (slide 179-180)
     /// Code HTTP 200 OK
     /// </summary>
     [HttpGet]
@@ -25,7 +25,7 @@ public class SpecialtiesController(SpecialtyService service) : ControllerBase
     }
 
     /// <summary>
-    /// GET /api/specialties/{id} - Détail d'une spécialité
+    /// GET /api/specialties/{id} - DÃ©tail d'une spÃ©cialitÃ©
     /// Selon le cours: 
     /// - NotFound() retourne 404 (slide 169)
     /// - Ok() retourne 200 (slide 169)
@@ -36,7 +36,7 @@ public class SpecialtiesController(SpecialtyService service) : ControllerBase
         var specialty = await service.GetByIdAsync(id);
 
         if (specialty == null)
-            return NotFound(new { message = $"Spécialité avec l'ID {id} introuvable" });
+            return NotFound(new { message = $"SpÃ©cialitÃ© avec l'ID {id} introuvable" });
 
         return Ok(specialty);
     }

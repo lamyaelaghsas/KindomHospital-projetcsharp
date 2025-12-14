@@ -32,10 +32,9 @@ public static class SeedData
     /// </summary>
     private static void SeedSpecialties(KingdomHospitalContext context)
     {
-        if (context.Specialties.Any()) // verifie si des spécialités existent déjà
-            return;
+        if (context.Specialties.Any())
+            return; // Déjà initialisé
 
-        // construit le chemin vers le fichier CSV
         var csvPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Infrastructure", "Data", "specialties.csv");
 
         if (!File.Exists(csvPath))
@@ -44,13 +43,13 @@ public static class SeedData
             return;
         }
 
-        var lines = File.ReadAllLines(csvPath).Skip(1); //Lit toutes les lignes du CSV et saute la première ligne (en-tête)
+        var lines = File.ReadAllLines(csvPath).Skip(1); // Skip header
         var specialties = new List<Specialty>();
 
         foreach (var line in lines)
         {
             var parts = line.Split(',');
-            if (parts.Length >= 2) 
+            if (parts.Length >= 2)
             {
                 specialties.Add(new Specialty
                 {
@@ -60,7 +59,7 @@ public static class SeedData
             }
         }
 
-        context.Specialties.AddRange(specialties); // Ajoute les spécialités à la base de données
+        context.Specialties.AddRange(specialties);
         context.SaveChanges();
         Console.WriteLine($"{specialties.Count} spécialités chargées");
     }
@@ -102,7 +101,7 @@ public static class SeedData
 
         context.Medicaments.AddRange(medicaments);
         context.SaveChanges();
-        Console.WriteLine($"{medicaments.Count} médicaments chargés");
+        Console.WriteLine($" {medicaments.Count} médicaments chargés");
     }
 
     /// <summary>
@@ -334,6 +333,6 @@ public static class SeedData
 
         context.Ordonnances.AddRange(new[] { ord1, ord2, ord3, ord4, ord5 });
         context.SaveChanges();
-        Console.WriteLine($" 5 ordonnances créées avec lignes");
+        Console.WriteLine($"5 ordonnances créées avec lignes");
     }
 }
