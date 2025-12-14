@@ -62,4 +62,87 @@ public class DoctorRepository(KingdomHospitalContext context)
     {
         return await context.Doctors.AnyAsync(d => d.Id == id);
     }
+
+    /// <summary>
+    /// Met à jour la spécialité d'un médecin
+    /// </summary>
+    public async Task<bool> UpdateSpecialtyAsync(int doctorId, int newSpecialtyId)
+    {
+        var doctor = await context.Doctors.FindAsync(doctorId);
+        if (doctor == null)
+            return false;
+
+        // Vérifier que la nouvelle spécialité existe
+        var specialtyExists = await context.Specialties.AnyAsync(s => s.Id == newSpecialtyId);
+        if (!specialtyExists)
+            return false;
+
+        doctor.SpecialtyID = newSpecialtyId;
+        await context.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>
+    /// Récupère les consultations d'un médecin avec filtre de dates optionnel
+    /// </summary>
+    public async Task<IEnumerable<Consultation>> GetConsultationsByDoctorIdAsync(
+        int doctorId,
+        DateOnly? from = null,
+        DateOnly? to = null)
+    {
+        var query = context.Consultations
+            .Include(c => c.Doctor)
+            .Include(c => c.Patient)
+            .Where(c => c.DoctorId == doctorId);
+
+        if (from.HasValue)
+            query = query.Where(c => c.Date >= from.Value);
+
+        if (to.HasValue)
+            query = query.Where(c => c.Date <= to.Value);
+
+        return await query
+            .OrderByDescending(c => c.Date)
+            .ThenByDescending(c => c.Hour)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Récupère les patients distincts déjà consultés par un médecin
+    /// </summary>
+    public async Task<IEnumerable<Patient>> GetPatientsByDoctorIdAsync(int doctorId)
+    {
+        return await context.Consultations
+            .Where(c => c.DoctorId == doctorId)
+            .Select(c => c.Patient)
+            .Distinct()
+            .OrderBy(p => p.LastName)
+            .ThenBy(p => p.FirstName)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Récupère les ordonnances d'un médecin avec filtre de dates optionnel
+    /// </summary>
+    public async Task<IEnumerable<Ordonnance>> GetOrdonnancesByDoctorIdAsync(
+        int doctorId,
+        DateOnly? from = null,
+        DateOnly? to = null)
+    {
+        var query = context.Ordonnances
+            .Include(o => o.Doctor)
+            .Include(o => o.Patient)
+            .Include(o => o.OrdonnanceLignes)
+            .Where(o => o.DoctorId == doctorId);
+
+        if (from.HasValue)
+            query = query.Where(o => o.Date >= from.Value);
+
+        if (to.HasValue)
+            query = query.Where(o => o.Date <= to.Value);
+
+        return await query
+            .OrderByDescending(o => o.Date)
+            .ToListAsync();
+    }
 }

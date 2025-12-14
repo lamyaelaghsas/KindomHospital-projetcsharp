@@ -175,4 +175,34 @@ public class OrdonnancesController(
 
         return NoContent();
     }
+
+    /// <summary>
+    /// PUT /api/ordonnances/{id}/consultation/{consultationId}
+    /// Rattache une ordonnance à une consultation
+    /// </summary>
+    [HttpPut("{id}/consultation/{consultationId}")]
+    public async Task<IActionResult> AttachToConsultation(int id, int consultationId)
+    {
+        var (success, error) = await service.AttachToConsultationAsync(id, consultationId);
+
+        if (!success)
+            return BadRequest(new { message = error });
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// DELETE /api/ordonnances/{id}/consultation
+    /// Détache l'ordonnance de sa consultation
+    /// </summary>
+    [HttpDelete("{id}/consultation")]
+    public async Task<IActionResult> DetachFromConsultation(int id)
+    {
+        var (success, error) = await service.DetachFromConsultationAsync(id);
+
+        if (!success)
+            return BadRequest(new { message = error });
+
+        return NoContent();
+    }
 }

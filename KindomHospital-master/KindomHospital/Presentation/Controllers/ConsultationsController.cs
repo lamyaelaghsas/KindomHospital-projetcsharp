@@ -95,4 +95,47 @@ public class ConsultationsController(ConsultationService service) : ControllerBa
 
         return NoContent();
     }
+
+    /// <summary>
+    /// GET /api/consultations/{id}/ordonnances
+    /// Liste les ordonnances liées à une consultation
+    /// </summary>
+    [HttpGet("{id}/ordonnances")]
+    public async Task<ActionResult<IEnumerable<OrdonnanceListDto>>> GetConsultationOrdonnances(int id)
+    {
+        var consultation = await service.GetByIdAsync(id);
+        if (consultation == null)
+            return NotFound($"Consultation {id} introuvable");
+
+        var ordonnances = await service.GetOrdonnancesByConsultationIdAsync(id);
+        return Ok(ordonnances);
+    }
+
+    /// <summary>
+    /// POST /api/consultations/{id}/ordonnances
+    /// Crée une ordonnance rattachée à cette consultation
+    /// </summary>
+    [HttpPost("{id}/ordonnances")]
+    public async Task<ActionResult<OrdonnanceDto>> CreateOrdonnanceForConsultation(
+        int id,
+        [FromBody] OrdonnanceCreateDto dto)
+    {
+        var consultation = await service.GetByIdAsync(id);
+        if (consultation == null)
+            return NotFound($"Consultation {id} introuvable");
+
+        // Injecter OrdonnanceService
+        var ordonnanceService = HttpContext.RequestServices.GetRequiredService<OrdonnanceService>();
+
+        var (success, error, ordonnance) = await ordonnanceService.CreateForConsultationAsync(id, dto);
+
+        if (!success)
+            return BadRequest(new { message = error });
+
+        return CreatedAtAction(
+            nameof(OrdonnancesController.GetById),
+            "Ordonnances",
+            new { id = ordonnance!.Id },
+            ordonnance);
+    }
 }

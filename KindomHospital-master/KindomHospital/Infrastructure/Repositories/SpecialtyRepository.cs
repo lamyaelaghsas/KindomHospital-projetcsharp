@@ -57,4 +57,17 @@ public class SpecialtyRepository(KingdomHospitalContext context)
         return await context.Specialties
             .AnyAsync(s => s.Name.ToLower() == name.ToLower());
     }
+
+    /// <summary>
+    /// Récupère tous les médecins d'une spécialité
+    /// </summary>
+    public async Task<IEnumerable<Doctor>> GetDoctorsBySpecialtyIdAsync(int specialtyId)
+    {
+        return await context.Doctors
+            .Where(d => d.SpecialtyID == specialtyId)
+            .Include(d => d.Specialty)
+            .OrderBy(d => d.LastName)
+            .ThenBy(d => d.FirstName)
+            .ToListAsync();
+    }
 }

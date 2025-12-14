@@ -95,4 +95,35 @@ public class PatientsController(PatientService service) : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// GET /api/patients/{id}/consultations
+    /// Liste les consultations d'un patient
+    /// </summary>
+    [HttpGet("{id}/consultations")]
+    public async Task<ActionResult<IEnumerable<ConsultationListDto>>> GetPatientConsultations(int id)
+    {
+        var patient = await service.GetByIdAsync(id);
+        if (patient == null)
+            return NotFound($"Patient {id} introuvable");
+
+        var consultations = await service.GetConsultationsByPatientIdAsync(id);
+        return Ok(consultations);
+    }
+
+    /// <summary>
+    /// GET /api/patients/{id}/ordonnances
+    /// Liste les ordonnances d'un patient
+    /// </summary>
+    [HttpGet("{id}/ordonnances")]
+    public async Task<ActionResult<IEnumerable<OrdonnanceListDto>>> GetPatientOrdonnances(int id)
+    {
+        var patient = await service.GetByIdAsync(id);
+        if (patient == null)
+            return NotFound($"Patient {id} introuvable");
+
+        var ordonnances = await service.GetOrdonnancesByPatientIdAsync(id);
+        return Ok(ordonnances);
+    }
+
 }

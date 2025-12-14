@@ -101,4 +101,18 @@ public class ConsultationRepository(KingdomHospitalContext context)
     {
         return await context.Ordonnances.AnyAsync(o => o.ConsultationId == id);
     }
+
+    /// <summary>
+    /// Récupère toutes les ordonnances liées à une consultation
+    /// </summary>
+    public async Task<IEnumerable<Ordonnance>> GetOrdonnancesByConsultationIdAsync(int consultationId)
+    {
+        return await context.Ordonnances
+            .Include(o => o.Doctor)
+            .Include(o => o.Patient)
+            .Include(o => o.OrdonnanceLignes)
+            .Where(o => o.ConsultationId == consultationId)
+            .OrderByDescending(o => o.Date)
+            .ToListAsync();
+    }
 }

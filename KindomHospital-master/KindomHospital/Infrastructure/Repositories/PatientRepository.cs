@@ -86,4 +86,33 @@ public class PatientRepository(KingdomHospitalContext context)
     {
         return await context.Ordonnances.AnyAsync(o => o.PatientId == id);
     }
+
+    /// <summary>
+    /// Récupère toutes les consultations d'un patient
+    /// </summary>
+    public async Task<IEnumerable<Consultation>> GetConsultationsByPatientIdAsync(int patientId)
+    {
+        return await context.Consultations
+            .Include(c => c.Doctor)
+                .ThenInclude(d => d.Specialty)
+            .Include(c => c.Patient)
+            .Where(c => c.PatientId == patientId)
+            .OrderByDescending(c => c.Date)
+            .ThenByDescending(c => c.Hour)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Récupère toutes les ordonnances d'un patient
+    /// </summary>
+    public async Task<IEnumerable<Ordonnance>> GetOrdonnancesByPatientIdAsync(int patientId)
+    {
+        return await context.Ordonnances
+            .Include(o => o.Doctor)
+            .Include(o => o.Patient)
+            .Include(o => o.OrdonnanceLignes)
+            .Where(o => o.PatientId == patientId)
+            .OrderByDescending(o => o.Date)
+            .ToListAsync();
+    }
 }

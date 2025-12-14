@@ -136,4 +136,27 @@ public class ConsultationService(
 
         return (true, null);
     }
+
+    /// <summary>
+    /// GET /api/consultations/{id}/ordonnances
+    /// Liste les ordonnances liées à une consultation
+    /// </summary>
+    public async Task<IEnumerable<OrdonnanceListDto>> GetOrdonnancesByConsultationIdAsync(int consultationId)
+    {
+        logger.LogInformation("Récupération des ordonnances de la consultation {ConsultationId}", consultationId);
+
+        // Vérifier que la consultation existe
+        if (!await repository.ExistsAsync(consultationId))
+            return Enumerable.Empty<OrdonnanceListDto>();
+
+        var ordonnances = await repository.GetOrdonnancesByConsultationIdAsync(consultationId);
+
+        return ordonnances.Select(o => new OrdonnanceListDto(
+            o.Id,
+            $"{o.Doctor?.FirstName} {o.Doctor?.LastName}",
+            $"{o.Patient?.FirstName} {o.Patient?.LastName}",
+            o.Date,
+            o.OrdonnanceLignes?.Count ?? 0
+        ));
+    }
 }

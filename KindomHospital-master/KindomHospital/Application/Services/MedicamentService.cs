@@ -57,4 +57,27 @@ public class MedicamentService(
 
         return (true, null, mapper.ToDto(created));
     }
+
+    /// <summary>
+    /// GET /api/medicaments/{id}/ordonnances
+    /// Liste des ordonnances où le médicament apparaît
+    /// </summary>
+    public async Task<IEnumerable<OrdonnanceListDto>> GetOrdonnancesByMedicamentIdAsync(int medicamentId)
+    {
+        logger.LogInformation("Récupération des ordonnances contenant le médicament {MedicamentId}", medicamentId);
+
+        // Vérifier que le médicament existe
+        if (!await repository.ExistsAsync(medicamentId))
+            return Enumerable.Empty<OrdonnanceListDto>();
+
+        var ordonnances = await repository.GetOrdonnancesByMedicamentIdAsync(medicamentId);
+
+        return ordonnances.Select(o => new OrdonnanceListDto(
+            o.Id,
+            $"{o.Doctor?.FirstName} {o.Doctor?.LastName}",
+            $"{o.Patient?.FirstName} {o.Patient?.LastName}",
+            o.Date,
+            o.OrdonnanceLignes?.Count ?? 0
+        ));
+    }
 }

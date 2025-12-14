@@ -79,4 +79,32 @@ public class OrdonnanceRepository(KingdomHospitalContext context)
     {
         return await context.Ordonnances.AnyAsync(o => o.Id == id);
     }
+
+    /// <summary>
+    /// Rattache une ordonnance à une consultation
+    /// </summary>
+    public async Task<bool> AttachToConsultationAsync(int ordonnanceId, int consultationId)
+    {
+        var ordonnance = await context.Ordonnances.FindAsync(ordonnanceId);
+        if (ordonnance == null)
+            return false;
+
+        ordonnance.ConsultationId = consultationId;
+        await context.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>
+    /// Détache une ordonnance de sa consultation
+    /// </summary>
+    public async Task<bool> DetachFromConsultationAsync(int ordonnanceId)
+    {
+        var ordonnance = await context.Ordonnances.FindAsync(ordonnanceId);
+        if (ordonnance == null)
+            return false;
+
+        ordonnance.ConsultationId = null;
+        await context.SaveChangesAsync();
+        return true;
+    }
 }

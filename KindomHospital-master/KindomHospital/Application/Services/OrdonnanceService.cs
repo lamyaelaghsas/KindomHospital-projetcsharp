@@ -178,4 +178,93 @@ public class OrdonnanceService(
 
         return (true, null);
     }
+
+    /// <summary>
+    /// POST /api/consultations/{consultationId}/ordonnances
+    /// Crée une ordonnance rattachée à une consultation
+    /// </summary>
+    public async Task<(bool Success, string? Error, OrdonnanceDto? Ordonnance)> CreateForConsultationAsync(
+        int consultationId,
+        OrdonnanceCreateDto dto)
+    {
+        logger.LogInformation("Création d'une ordonnance pour la consultation {ConsultationId}", consultationId);
+
+        // Vérifier que la consultation existe
+        var consultation = await consultationRepository.GetByIdAsync(consultationId);
+        if (consultation == null)
+        {
+            return (false, $"Consultation {consultationId} introuvable", null);
+        }
+
+        // Forcer les données de la consultation
+        var ordonnanceDto = dto with
+        {
+            DoctorId = consultation.DoctorId,
+            PatientId = consultation.PatientId,
+            ConsultationId = consultationId
+        };
+
+        // Utiliser la méthode CreateAsync existante
+        return await CreateAsync(ordonnanceDto);
+    }
+
+    /// <summary>
+    /// PUT /api/ordonnances/{ordonnanceId}/consultation/{consultationId}
+    /// Rattache une ordonnance à une consultation
+    /// </summary>
+    public async Task<(bool Success, string? Error)> AttachToConsultationAsync(int ordonnanceId, int consultationId)
+    {
+        logger.LogInformation("Rattachement de l'ordonnance {OrdonnanceId} à la consultation {ConsultationId}",
+            ordonnanceId, consultationId);
+
+        // Vérifier que l'ordonnance existe
+        var ordonnance = await repository.GetByIdAsync(ordonnanceId);
+        if (ordonnance == null)
+        {
+            return (false, $"Ordonnance {ordonnanceId} introuvable");
+        }
+
+        // Vérifier que la consultation existe
+        var consultation = await consultationRepository.GetByIdAsync(consultationId);
+        if (consultation == null)
+        {
+            return (false, $"Consultation {consultationId} introuvable");
+        }
+
+        // Vérifier la cohérence médecin/patient
+        if (ordonnance.DoctorId != consultation.DoctorId)
+        {
+            return (false, "Le médecin de l'ordonnance ne correspond pas au médecin de la consultation");
+        }
+
+        if (ordonnance.PatientId != consultation.PatientId)
+        {
+            return (false, "Le patient de l'ordonnance ne correspond pas au patient de la consultation");
+        }
+
+        var success = await repository.AttachToConsultationAsync(ordonnanceId, consultationId);
+        return success
+            ? (true, null)
+            : (false, "Erreur lors du rattachement");
+    }
+
+    /// <summary>
+    /// DELETE /api/ordonnances/{ordonnanceId}/consultation
+    /// Détache une ordonnance de sa consultation
+    /// </summary>
+    public async Task<(bool Success, string? Error)> DetachFromConsultationAsync(int ordonnanceId)
+    {
+        logger.LogInformation("Détachement de l'ordonnance {OrdonnanceId} de sa consultation", ordonnanceId);
+
+        // Vérifier que l'ordonnance existe
+        if (!await repository.ExistsAsync(ordonnanceId))
+        {
+            return (false, $"Ordonnance {ordonnanceId} introuvable");
+        }
+
+        var success = await repository.DetachFromConsultationAsync(ordonnanceId);
+        return success
+            ? (true, null)
+            : (false, "Erreur lors du détachement");
+    }
 }

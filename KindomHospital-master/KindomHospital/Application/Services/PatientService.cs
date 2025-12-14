@@ -124,4 +124,51 @@ public class PatientService(
 
         return (true, null);
     }
+
+    /// <summary>
+    /// GET /api/patients/{id}/consultations
+    /// Liste les consultations d'un patient
+    /// </summary>
+    public async Task<IEnumerable<ConsultationListDto>> GetConsultationsByPatientIdAsync(int patientId)
+    {
+        logger.LogInformation("Récupération des consultations du patient {PatientId}", patientId);
+
+        // Vérifier que le patient existe
+        if (!await repository.ExistsAsync(patientId))
+            return Enumerable.Empty<ConsultationListDto>();
+
+        var consultations = await repository.GetConsultationsByPatientIdAsync(patientId);
+
+        return consultations.Select(c => new ConsultationListDto(
+            c.Id,
+            $"{c.Doctor?.FirstName} {c.Doctor?.LastName}",
+            $"{c.Patient?.FirstName} {c.Patient?.LastName}",
+            c.Date,
+            c.Hour,
+            c.Reason
+        ));
+    }
+
+    /// <summary>
+    /// GET /api/patients/{id}/ordonnances
+    /// Liste les ordonnances d'un patient
+    /// </summary>
+    public async Task<IEnumerable<OrdonnanceListDto>> GetOrdonnancesByPatientIdAsync(int patientId)
+    {
+        logger.LogInformation("Récupération des ordonnances du patient {PatientId}", patientId);
+
+        // Vérifier que le patient existe
+        if (!await repository.ExistsAsync(patientId))
+            return Enumerable.Empty<OrdonnanceListDto>();
+
+        var ordonnances = await repository.GetOrdonnancesByPatientIdAsync(patientId);
+
+        return ordonnances.Select(o => new OrdonnanceListDto(
+            o.Id,
+            $"{o.Doctor?.FirstName} {o.Doctor?.LastName}",
+            $"{o.Patient?.FirstName} {o.Patient?.LastName}",
+            o.Date,
+            o.OrdonnanceLignes?.Count ?? 0
+        ));
+    }
 }

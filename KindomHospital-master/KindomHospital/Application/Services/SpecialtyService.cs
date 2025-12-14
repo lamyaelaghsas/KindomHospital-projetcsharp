@@ -36,4 +36,27 @@ public class SpecialtyService(
         var specialty = await repository.GetByIdAsync(id);
         return specialty != null ? mapper.ToDto(specialty) : null;
     }
+
+    /// <summary>
+    /// Récupère tous les médecins d'une spécialité
+    /// Endpoint: GET /api/specialties/{id}/doctors
+    /// </summary>
+    public async Task<IEnumerable<DoctorListDto>> GetDoctorsBySpecialtyIdAsync(int specialtyId)
+    {
+        logger.LogInformation("Récupération des médecins de la spécialité {SpecialtyId}", specialtyId);
+
+        // Vérifier que la spécialité existe
+        var specialty = await repository.GetByIdAsync(specialtyId);
+        if (specialty == null)
+            return Enumerable.Empty<DoctorListDto>();
+
+        var doctors = await repository.GetDoctorsBySpecialtyIdAsync(specialtyId);
+
+        return doctors.Select(d => new DoctorListDto(
+            d.Id,
+            d.FirstName,
+            d.LastName,
+            d.Specialty?.Name ?? "Non définie"
+        ));
+    }
 }

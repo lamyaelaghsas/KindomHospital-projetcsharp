@@ -67,4 +67,20 @@ public class MedicamentRepository(KingdomHospitalContext context)
 
         return await query.AnyAsync();
     }
+
+    /// <summary>
+    /// Récupère toutes les ordonnances contenant ce médicament
+    /// </summary>
+    public async Task<IEnumerable<Ordonnance>> GetOrdonnancesByMedicamentIdAsync(int medicamentId)
+    {
+        return await context.OrdonnanceLignes
+            .Where(ol => ol.MedicamentId == medicamentId)
+            .Select(ol => ol.Ordonnance)
+            .Distinct()
+            .Include(o => o.Doctor)
+            .Include(o => o.Patient)
+            .Include(o => o.OrdonnanceLignes)
+            .OrderByDescending(o => o.Date)
+            .ToListAsync();
+    }
 }
