@@ -25,7 +25,7 @@ public class SpecialtyConfiguration : IEntityTypeConfiguration<Specialty>
         // Configuration du Name
         builder.Property(s => s.Name)
             .IsRequired()                    // Required
-            .HasMaxLength(30)                // MaxLength: 30
+            .HasMaxLength(100)                // MaxLength: 30
             .IsUnicode(true);                // Supporte les caractères unicode
         
         // Index unique sur Name - une spécialité ne peut exister qu'une fois
@@ -36,7 +36,7 @@ public class SpecialtyConfiguration : IEntityTypeConfiguration<Specialty>
         // Relation One-to-Many: Une spécialité -> Plusieurs médecins
         builder.HasMany(s => s.Doctors)
             .WithOne(d => d.Specialty)
-            .HasForeignKey(d => d.Id)
+            .HasForeignKey(d => d.SpecialtyID)
             .OnDelete(DeleteBehavior.Restrict);  // Empêche la suppression si des médecins sont liés
     }
 }

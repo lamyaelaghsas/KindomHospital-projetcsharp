@@ -10,8 +10,8 @@ public class Ordonnance
     public string? Notes { get; set; }
 
     // Navigation properties
-    public Doctor Doctor { get; set; } = null!;
-    public Patient Patient { get; set; } = null!;
+    public Doctor? Doctor { get; set; } 
+    public Patient? Patient { get; set; }  
     public Consultation? Consultation { get; set; }
     public ICollection<OrdonnanceLigne> OrdonnanceLignes { get; set; } = new List<OrdonnanceLigne>();
 }

@@ -48,7 +48,7 @@ namespace KingdomHospital.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -59,7 +59,8 @@ namespace KingdomHospital.Infrastructure.Migrations
                 name: "Doctors",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     SpecialtyID = table.Column<int>(type: "int", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false)
@@ -68,8 +69,8 @@ namespace KingdomHospital.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Doctors", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Doctors_Specialties_Id",
-                        column: x => x.Id,
+                        name: "FK_Doctors_Specialties_SpecialtyID",
+                        column: x => x.SpecialtyID,
                         principalTable: "Specialties",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -185,6 +186,11 @@ namespace KingdomHospital.Infrastructure.Migrations
                 name: "IX_Doctor_LastName_FirstName",
                 table: "Doctors",
                 columns: new[] { "LastName", "FirstName" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Doctors_SpecialtyID",
+                table: "Doctors",
+                column: "SpecialtyID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Medicament_Name_Form_Strength",

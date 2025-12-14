@@ -45,22 +45,30 @@ public static class SeedData
 
         var lines = File.ReadAllLines(csvPath).Skip(1); // Skip header
         var specialties = new List<Specialty>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var line in lines)
         {
             var parts = line.Split(',');
             if (parts.Length >= 2)
             {
-                specialties.Add(new Specialty
+                var name = parts[1].Trim();
+                if (string.IsNullOrWhiteSpace(name))
+                    continue; // Ignorer les lignes malformées
+
+                if (seen.Add(name))
                 {
-                    Id = int.Parse(parts[0]),
-                    Name = parts[1].Trim()
-                });
+                    specialties.Add(new Specialty { Name = name });
+                }
             }
         }
 
-        context.Specialties.AddRange(specialties);
-        context.SaveChanges();
+        if (specialties.Count > 0)
+        {
+            context.Specialties.AddRange(specialties);
+            context.SaveChanges();
+        }
+
         Console.WriteLine($"{specialties.Count} spécialités chargées");
     }
 
@@ -90,7 +98,6 @@ public static class SeedData
             {
                 medicaments.Add(new Medicament
                 {
-                    Id = int.Parse(parts[0]),
                     Name = parts[1].Trim(),
                     DosageForm = parts[2].Trim(),
                     Strength = parts[3].Trim(),
@@ -99,9 +106,13 @@ public static class SeedData
             }
         }
 
-        context.Medicaments.AddRange(medicaments);
-        context.SaveChanges();
-        Console.WriteLine($" {medicaments.Count} médicaments chargés");
+        if (medicaments.Count > 0)
+        {
+            context.Medicaments.AddRange(medicaments);
+            context.SaveChanges();
+        }
+
+        Console.WriteLine($"{medicaments.Count} médicaments chargés");
     }
 
     /// <summary>
@@ -112,18 +123,40 @@ public static class SeedData
         if (context.Doctors.Any())
             return; // Déjà initialisé
 
-        var doctors = new List<Doctor>
-    {
-        new() { FirstName = "Jean", LastName = "Dupont", SpecialtyID = 10 }, // Cardiologie
-        new() { FirstName = "Marie", LastName = "Martin", SpecialtyID = 21 }, // Pédiatrie
-        new() { FirstName = "Pierre", LastName = "Bernard", SpecialtyID = 16 }, // Neurologie
-        new() { FirstName = "Sophie", LastName = "Dubois", SpecialtyID = 25 }, // Dermatologie
-        new() { FirstName = "Luc", LastName = "Thomas", SpecialtyID = 12 }, // Gastro-entérologie
-        new() { FirstName = "Emma", LastName = "Robert", SpecialtyID = 23 }, // Ophtalmologie
-    };
+        // Récupérer les spécialités par nom pour avoir les bons IDs
+        var cardiologie = context.Specialties.FirstOrDefault(s => s.Name == "Cardiologie");
+        var pediatrie = context.Specialties.FirstOrDefault(s => s.Name == "Pédiatrie");
+        var neurologie = context.Specialties.FirstOrDefault(s => s.Name == "Neurologie");
+        var dermatologie = context.Specialties.FirstOrDefault(s => s.Name == "Dermatologie");
+        var gastro = context.Specialties.FirstOrDefault(s => s.Name == "Gastro-entérologie");
+        var ophtalmologie = context.Specialties.FirstOrDefault(s => s.Name == "Ophtalmologie");
 
-        context.Doctors.AddRange(doctors);
-        context.SaveChanges();
+        var doctors = new List<Doctor>();
+
+        if (cardiologie != null)
+            doctors.Add(new Doctor { FirstName = "Jean", LastName = "Dupont", SpecialtyID = cardiologie.Id });
+
+        if (pediatrie != null)
+            doctors.Add(new Doctor { FirstName = "Marie", LastName = "Martin", SpecialtyID = pediatrie.Id });
+
+        if (neurologie != null)
+            doctors.Add(new Doctor { FirstName = "Pierre", LastName = "Bernard", SpecialtyID = neurologie.Id });
+
+        if (dermatologie != null)
+            doctors.Add(new Doctor { FirstName = "Sophie", LastName = "Dubois", SpecialtyID = dermatologie.Id });
+
+        if (gastro != null)
+            doctors.Add(new Doctor { FirstName = "Luc", LastName = "Thomas", SpecialtyID = gastro.Id });
+
+        if (ophtalmologie != null)
+            doctors.Add(new Doctor { FirstName = "Emma", LastName = "Robert", SpecialtyID = ophtalmologie.Id });
+
+        if (doctors.Count > 0)
+        {
+            context.Doctors.AddRange(doctors);
+            context.SaveChanges();
+        }
+
         Console.WriteLine($"{doctors.Count} médecins créés");
     }
 
@@ -181,7 +214,7 @@ public static class SeedData
             // Patient 5 - 1 consultation
             new() { DoctorId = 2, PatientId = 5, Date = today.AddDays(-4), Hour = new TimeOnly(14, 0), Reason = "Contrôle pédiatrique" },
             
-            // Même médecin, même jour, heures différentes (règle métier)
+            // Même médecin, même jour, heures différentes (requis par l'énoncé)
             new() { DoctorId = 1, PatientId = 1, Date = today.AddDays(-1), Hour = new TimeOnly(9, 0), Reason = "Suivi cardiologique" },
             new() { DoctorId = 1, PatientId = 3, Date = today.AddDays(-1), Hour = new TimeOnly(10, 30), Reason = "Consultation cardiaque" },
         };
@@ -213,7 +246,7 @@ public static class SeedData
 
         ord1.OrdonnanceLignes.Add(new OrdonnanceLigne
         {
-            MedicamentId = 8, // Losartan
+            MedicamentId = 8,
             Dosage = "50mg",
             Frequency = "1 fois par jour",
             Duration = "30 jours",
@@ -223,7 +256,7 @@ public static class SeedData
 
         ord1.OrdonnanceLignes.Add(new OrdonnanceLigne
         {
-            MedicamentId = 9, // Amlodipine
+            MedicamentId = 9,
             Dosage = "5mg",
             Frequency = "1 fois par jour",
             Duration = "30 jours",
@@ -231,7 +264,7 @@ public static class SeedData
             Instructions = "À prendre le soir"
         });
 
-        // Ordonnance 2 - Patient 2, sans consultation, 1 médicament
+        // Ordonnance 2 - Patient 2, consultation dermatologie, 1 médicament
         var ord2 = new Ordonnance
         {
             DoctorId = 4,
@@ -243,7 +276,7 @@ public static class SeedData
 
         ord2.OrdonnanceLignes.Add(new OrdonnanceLigne
         {
-            MedicamentId = 1, // Paracetamol
+            MedicamentId = 1,
             Dosage = "500mg",
             Frequency = "3 fois par jour",
             Duration = "5 jours",
@@ -263,7 +296,7 @@ public static class SeedData
 
         ord3.OrdonnanceLignes.Add(new OrdonnanceLigne
         {
-            MedicamentId = 5, // Omeprazole
+            MedicamentId = 5,
             Dosage = "20mg",
             Frequency = "1 fois par jour",
             Duration = "14 jours",
@@ -273,7 +306,7 @@ public static class SeedData
 
         ord3.OrdonnanceLignes.Add(new OrdonnanceLigne
         {
-            MedicamentId = 1, // Paracetamol
+            MedicamentId = 1,
             Dosage = "1000mg",
             Frequency = "2 fois par jour",
             Duration = "7 jours",
@@ -283,7 +316,7 @@ public static class SeedData
 
         ord3.OrdonnanceLignes.Add(new OrdonnanceLigne
         {
-            MedicamentId = 3, // Amoxicilline
+            MedicamentId = 3,
             Dosage = "500mg",
             Frequency = "3 fois par jour",
             Duration = "7 jours",
@@ -303,7 +336,7 @@ public static class SeedData
 
         ord4.OrdonnanceLignes.Add(new OrdonnanceLigne
         {
-            MedicamentId = 25, // Ramipril
+            MedicamentId = 25,
             Dosage = "5mg",
             Frequency = "1 fois par jour",
             Duration = "30 jours",
@@ -311,7 +344,7 @@ public static class SeedData
             Instructions = "Le matin"
         });
 
-        // Ordonnance 5 - Patient 4, deuxième ordonnance (patient avec 2 ordonnances)
+        // Ordonnance 5 - Patient 4, deuxième ordonnance (patient avec 2 ordonnances - requis par l'énoncé)
         var ord5 = new Ordonnance
         {
             DoctorId = 3,
@@ -323,7 +356,7 @@ public static class SeedData
 
         ord5.OrdonnanceLignes.Add(new OrdonnanceLigne
         {
-            MedicamentId = 2, // Ibuprofène
+            MedicamentId = 2,
             Dosage = "400mg",
             Frequency = "2 fois par jour",
             Duration = "10 jours",
@@ -333,6 +366,6 @@ public static class SeedData
 
         context.Ordonnances.AddRange(new[] { ord1, ord2, ord3, ord4, ord5 });
         context.SaveChanges();
-        Console.WriteLine($"5 ordonnances créées avec lignes");
+        Console.WriteLine("5 ordonnances créées avec lignes");
     }
 }

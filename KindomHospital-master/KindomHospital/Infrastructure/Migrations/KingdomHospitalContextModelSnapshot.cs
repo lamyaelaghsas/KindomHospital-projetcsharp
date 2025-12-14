@@ -64,6 +64,8 @@ namespace KingdomHospital.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -80,6 +82,8 @@ namespace KingdomHospital.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SpecialtyID");
 
                     b.HasIndex("LastName", "FirstName")
                         .HasDatabaseName("IX_Doctor_LastName_FirstName");
@@ -255,9 +259,9 @@ namespace KingdomHospital.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(30)
+                        .HasMaxLength(100)
                         .IsUnicode(true)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -291,7 +295,7 @@ namespace KingdomHospital.Infrastructure.Migrations
                 {
                     b.HasOne("KingdomHospital.Domain.Entities.Specialty", "Specialty")
                         .WithMany("Doctors")
-                        .HasForeignKey("Id")
+                        .HasForeignKey("SpecialtyID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

@@ -12,7 +12,7 @@
         public string? Instructions { get; set; }
 
         // Navigation properties
-        public Ordonnance Ordonnance { get; set; } = null!;
-        public Medicament Medicament { get; set; } = null!;
+        public Ordonnance? Ordonnance { get; set; } 
+        public Medicament? Medicament { get; set; } 
     }
 }
