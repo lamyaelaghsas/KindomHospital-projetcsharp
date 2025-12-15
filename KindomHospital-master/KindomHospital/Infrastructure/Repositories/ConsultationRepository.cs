@@ -115,4 +115,42 @@ public class ConsultationRepository(KingdomHospitalContext context)
             .OrderByDescending(o => o.Date)
             .ToListAsync();
     }
+
+    /// <summary>
+    /// Filtre les consultations par docteur et/ou patient avec plage de dates
+    /// Au moins doctorId ou patientId doit être fourni
+    /// </summary>
+    public async Task<List<Consultation>> GetFilteredAsync(
+        int? doctorId,
+        int? patientId,
+        DateOnly? from,
+        DateOnly? to)
+    {
+        var query = context.Consultations
+            .Include(c => c.Doctor)
+            .Include(c => c.Patient)
+            .AsQueryable();
+
+
+        // Filtrer par docteur si fourni
+        if (doctorId.HasValue)
+            query = query.Where(c => c.DoctorId == doctorId.Value);
+
+        // Filtrer par patient si fourni
+        if (patientId.HasValue)
+            query = query.Where(c => c.PatientId == patientId.Value);
+
+        // Filtrer par date de début si fournie
+        if (from.HasValue)
+            query = query.Where(c => c.Date >= from.Value);
+
+        // Filtrer par date de fin si fournie
+        if (to.HasValue)
+            query = query.Where(c => c.Date <= to.Value);
+
+        return await query
+            .OrderByDescending(c => c.Date)
+            .ThenByDescending(c => c.Hour)
+            .ToListAsync();
+    }
 }

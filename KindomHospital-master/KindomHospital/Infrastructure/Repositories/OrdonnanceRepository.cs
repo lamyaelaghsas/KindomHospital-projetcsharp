@@ -107,4 +107,41 @@ public class OrdonnanceRepository(KingdomHospitalContext context)
         await context.SaveChangesAsync();
         return true;
     }
+
+    /// <summary>
+    /// Filtre les ordonnances par docteur et/ou patient avec plage de dates
+    /// Au moins doctorId ou patientId doit être fourni
+    /// </summary>
+    public async Task<List<Ordonnance>> GetFilteredAsync(
+        int? doctorId,
+        int? patientId,
+        DateOnly? from,
+        DateOnly? to)
+    {
+        var query = context.Ordonnances
+            .Include(o => o.Doctor)
+            .Include(o => o.Patient)
+            .Include(o => o.OrdonnanceLignes)
+            .AsQueryable();
+
+        // Filtrer par docteur si fourni
+        if (doctorId.HasValue)
+            query = query.Where(o => o.DoctorId == doctorId.Value);
+
+        // Filtrer par patient si fourni
+        if (patientId.HasValue)
+            query = query.Where(o => o.PatientId == patientId.Value);
+
+        // Filtrer par date de début si fournie
+        if (from.HasValue)
+            query = query.Where(o => o.Date >= from.Value);
+
+        // Filtrer par date de fin si fournie
+        if (to.HasValue)
+            query = query.Where(o => o.Date <= to.Value);
+
+        return await query
+            .OrderByDescending(o => o.Date)
+            .ToListAsync();
+    }
 }

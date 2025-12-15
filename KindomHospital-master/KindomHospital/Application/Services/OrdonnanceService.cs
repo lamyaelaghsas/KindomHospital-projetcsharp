@@ -267,4 +267,40 @@ public class OrdonnanceService(
             ? (true, null)
             : (false, "Erreur lors du détachement");
     }
+
+    /// <summary>
+    /// GET /api/ordonnances?doctorId=&patientId=&from=&to=
+    /// Filtre les ordonnances. Au moins doctorId ou patientId doit être fourni.
+    /// </summary>
+    public async Task<(bool Success, string? Error, List<OrdonnanceListDto>? Ordonnances)> GetFilteredAsync(
+        int? doctorId,
+        int? patientId,
+        DateOnly? from,
+        DateOnly? to)
+    {
+        logger.LogInformation(
+            "Filtrage ordonnances - DoctorId: {DoctorId}, PatientId: {PatientId}, From: {From}, To: {To}",
+            doctorId, patientId, from, to);
+
+        // Validation: au moins un ID doit être fourni
+        if (!doctorId.HasValue && !patientId.HasValue)
+        {
+            return (false, "Au moins doctorId ou patientId doit être fourni", null);
+        }
+
+        // Vérifier que le docteur existe si fourni
+        if (doctorId.HasValue && !await doctorRepository.ExistsAsync(doctorId.Value))
+        {
+            return (false, $"Le médecin {doctorId.Value} n'existe pas", null);
+        }
+
+        // Vérifier que le patient existe si fourni
+        if (patientId.HasValue && !await patientRepository.ExistsAsync(patientId.Value))
+        {
+            return (false, $"Le patient {patientId.Value} n'existe pas", null);
+        }
+
+        var ordonnances = await repository.GetFilteredAsync(doctorId, patientId, from, to);
+        return (true, null, ordonnances.Select(o => mapper.ToListDto(o)).ToList());
+    }
 }

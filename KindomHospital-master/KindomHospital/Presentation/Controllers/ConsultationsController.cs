@@ -12,17 +12,7 @@ namespace KingdomHospital.Presentation.Controllers;
 [ApiController]
 public class ConsultationsController(ConsultationService service) : ControllerBase
 {
-    /// <summary>
-    /// GET /api/consultations - Liste toutes les consultations
-    /// Code HTTP: 200 OK
-    /// </summary>
-    [HttpGet]
-    public async Task<ActionResult<List<ConsultationListDto>>> GetAll()
-    {
-        var consultations = await service.GetAllAsync();
-        return Ok(consultations);
-    }
-
+    
     /// <summary>
     /// GET /api/consultations/{id} - Détail d'une consultation
     /// Codes HTTP: 200 OK, 404 Not Found
@@ -137,5 +127,33 @@ public class ConsultationsController(ConsultationService service) : ControllerBa
             "Ordonnances",
             new { id = ordonnance!.Id },
             ordonnance);
+    }
+    /// <summary>
+    /// GET /api/consultations - Liste toutes les consultations
+    /// GET /api/consultations?doctorId=&patientId=&from=&to= - Liste filtrée
+    /// Au moins doctorId ou patientId doit être fourni pour le filtre
+    /// Codes HTTP: 200 OK, 400 Bad Request
+    /// </summary>
+    [HttpGet]
+    public async Task<ActionResult<List<ConsultationListDto>>> GetAll(
+        [FromQuery] int? doctorId,
+        [FromQuery] int? patientId,
+        [FromQuery] DateOnly? from,
+        [FromQuery] DateOnly? to)
+    {
+        // Si des paramètres de filtre sont fournis, utiliser le filtre
+        if (doctorId.HasValue || patientId.HasValue || from.HasValue || to.HasValue)
+    {
+            var (success, error, consultations) = await service.GetFilteredAsync(doctorId, patientId, from, to);
+
+            if (!success)
+                return BadRequest(new { message = error });
+
+            return Ok(consultations);
+        }
+
+        // Sinon, retourner toutes les consultations
+        var allConsultations = await service.GetAllAsync();
+        return Ok(allConsultations);
     }
 }

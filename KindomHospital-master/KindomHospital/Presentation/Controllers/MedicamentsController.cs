@@ -55,4 +55,22 @@ public class MedicamentsController(MedicamentService service) : ControllerBase
 
         return CreatedAtAction(nameof(GetById), new { id = medicament!.Id }, medicament);
     }
+
+    /// <summary>
+    /// GET /api/medicaments/{id}/ordonnances - Liste des ordonnances où le médicament apparaît
+    /// Codes HTTP: 200 OK, 404 Not Found
+    /// Endpoint relationnel selon le projet (section 10)
+    /// </summary>
+    [HttpGet("{id}/ordonnances")]
+    public async Task<ActionResult<IEnumerable<OrdonnanceListDto>>> GetOrdonnancesByMedicamentId(int id)
+    {
+        // Vérifier que le médicament existe
+        var medicament = await service.GetByIdAsync(id);
+        if (medicament == null)
+            return NotFound(new { message = $"Médicament avec l'ID {id} introuvable" });
+
+        var ordonnances = await service.GetOrdonnancesByMedicamentIdAsync(id);
+        return Ok(ordonnances);
+    }
+
 }

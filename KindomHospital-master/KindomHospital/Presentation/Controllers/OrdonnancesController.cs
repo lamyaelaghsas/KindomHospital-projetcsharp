@@ -14,16 +14,6 @@ public class OrdonnancesController(
     OrdonnanceService service,
     OrdonnanceLigneService ligneService) : ControllerBase
 {
-    /// <summary>
-    /// GET /api/ordonnances - Liste toutes les ordonnances
-    /// Code HTTP: 200 OK
-    /// </summary>
-    [HttpGet]
-    public async Task<ActionResult<List<OrdonnanceListDto>>> GetAll()
-    {
-        var ordonnances = await service.GetAllAsync();
-        return Ok(ordonnances);
-    }
 
     /// <summary>
     /// GET /api/ordonnances/{id} - Détail d'une ordonnance
@@ -204,5 +194,34 @@ public class OrdonnancesController(
             return BadRequest(new { message = error });
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// GET /api/ordonnances - Liste toutes les ordonnances
+    /// GET /api/ordonnances?doctorId=&patientId=&from=&to= - Liste filtrée
+    /// Au moins doctorId ou patientId doit être fourni pour le filtre
+    /// Codes HTTP: 200 OK, 400 Bad Request
+    /// </summary>
+    [HttpGet]
+    public async Task<ActionResult<List<OrdonnanceListDto>>> GetAll(
+        [FromQuery] int? doctorId,
+        [FromQuery] int? patientId,
+        [FromQuery] DateOnly? from,
+        [FromQuery] DateOnly? to)
+    {
+        // Si des paramètres de filtre sont fournis, utiliser le filtre
+        if (doctorId.HasValue || patientId.HasValue || from.HasValue || to.HasValue)
+    {
+            var (success, error, ordonnances) = await service.GetFilteredAsync(doctorId, patientId, from, to);
+
+            if (!success)
+                return BadRequest(new { message = error });
+
+            return Ok(ordonnances);
+        }
+
+        // Sinon, retourner toutes les ordonnances
+        var allOrdonnances = await service.GetAllAsync();
+        return Ok(allOrdonnances);
     }
 }
